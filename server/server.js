@@ -1,7 +1,7 @@
-import express from "express";
-import cors from "cors";
-import * as dotenv from "dotenv";
-import fetch from "node-fetch";
+const express = require('express');
+const cors = require('cors');
+const dotenv = require('dotenv');
+const { GoogleGenerativeAI } = require("@google/generative-ai");
 
 dotenv.config();
 
@@ -11,67 +11,59 @@ const PORT = 5000;
 app.use(cors());
 app.use(express.json());
 
-const HF_API_KEY = process.env.HF_API_KEY;
-const HF_MODEL = "mistralai/Mixtral-8x7B-Instruct-v0.1";
-const HF_API_URL = `https://api-inference.huggingface.co/models/${HF_MODEL}`;
+const API_KEY = process.env.GEMINI_API_KEY;
 
-if (!HF_API_KEY) {
-    console.error("Hugging Face API key is missing. Please set HF_API_KEY in your .env file.");
+if (!API_KEY) {
+    console.error("Gemini API key is missing. Please set GEMINI_API_KEY in your .env file.");
     process.exit(1);
 }
 
-let chatHistory = "";
+const genAI = new GoogleGenerativeAI(API_KEY);
+const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+
+const systemPrompt = `You are a compassionate and supportive AI assistant designed to help people dealing with depression. 
+- Respond with empathy, understanding, and kindness.
+- Avoid giving medical advice, but offer emotional support and encouragement.
+- If the user expresses thoughts of self-harm or suicide, include crisis hotline information in your response.
+- Suggest healthy coping strategies when appropriate.
+- Keep responses concise but meaningful.`;
 
 app.post('/chat', async (req, res) => {
-    const { message } = req.body;
-    if (!message) {
-        return res.status(400).json({ error: "Message is required" });
-    }
-
     try {
-        chatHistory += `User: ${message}\nBot: `;
+        const { prompt } = req.body;
 
-        const systemPrompt = "You are a supportive mental health assistant. Respond with empathy, validate feelings, and avoid medical advice. Encourage professional help and maintain a compassionate tone.";
+        if (!prompt) {
+            return res.status(400).json({
+                success: false,
+                error: "Please share how you're feeling or what you'd like to talk about."
+            });
+        }
 
-        const prompt = `${systemPrompt}\n\n${chatHistory}`;
-        const response = await fetch(HF_API_URL, {
-            method: "POST",
-            headers: {
-                "Authorization": `Bearer ${HF_API_KEY}`,
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-                inputs: prompt,
-                parameters: {
-                    max_new_tokens: 50,
-                    temperature: 0.7,
-                    top_p: 0.95,
-                    return_full_text: false,
-                },
-            }),
+        const lowerPrompt = prompt.toLowerCase();
+        const crisisKeywords = ['kill myself', 'end my life', 'suicide', 'self-harm', 'hurt myself'];
+        const isCrisis = crisisKeywords.some(keyword => lowerPrompt.includes(keyword));
+
+        const fullPrompt = `${systemPrompt}\n\nUser message: ${prompt}`;
+
+        const result = await model.generateContent(fullPrompt);
+        let responseText = result.response.text();
+
+        if (isCrisis) {
+            responseText += `\n\nI'm really worried about you. You don't have to go through this alone. Please consider reaching out to someone who can help:
+            - National Suicide Prevention Lifeline: 1-800-273-8255 (USA)
+            - Crisis Text Line: Text HOME to 741741
+            - Or call emergency services (911 in the USA) if you're in immediate danger.`;
+        }
+
+        res.json({
+            success: true,
+            response: responseText
         });
-
-        if (!response.ok) {
-            throw new Error(`Hugging Face API error: ${response.statusText}`);
-        }
-
-        const data = await response.json();
-        const botResponse = data[0]?.generated_text?.trim() || "I'm here to listen. Could you share more?";
-
-        chatHistory += `${botResponse}\n`;
-
-        const historyLines = chatHistory.split('\n');
-        if (historyLines.length > 16) { // 8 messages (user+bot pairs)
-            chatHistory = historyLines.slice(-16).join('\n');
-        }
-
-        res.json({ response: botResponse });
-
     } catch (error) {
-        console.error("Error:", error.message);
+        console.error('Error generating content:', error);
         res.status(500).json({
-            response: "I'm here for you. Could you tell me more about what you're feeling?",
-            error: "Response generation failed"
+            success: false,
+            error: "I'm sorry, I'm having trouble responding right now. Please try again or reach out to a support line if you need immediate help."
         });
     }
 });
