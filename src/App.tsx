@@ -1,12 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import axios, { AxiosResponse } from 'axios';
-import {MoonIcon, SendIcon, SunIcon} from "./components/icons/IconComponents.tsx";
-
-interface Message {
-    text: string;
-    isUser: boolean;
-    timestamp: string;
-}
+import {MoonIcon, SendIcon, SunIcon} from "./components/IconComponents.tsx";
+import {ApiResponse, Message} from "./components/TypesComponent.tsx";
 
 const App: React.FC = () => {
     const [messages, setMessages] = useState<Message[]>([]);
@@ -14,6 +9,69 @@ const App: React.FC = () => {
     const [isLoading, setIsLoading] = useState(false);
     const [darkMode, setDarkMode] = useState(false);
     const messagesEndRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+            setDarkMode(true);
+        }
+    }, []);
+
+    useEffect(() => {
+        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    }, [messages]);
+
+    const handleSendMessage = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!input.trim()) return;
+
+        const userMessage: Message = {
+            text: input,
+            isUser: true,
+            timestamp: new Date().toLocaleTimeString(),
+        };
+        setMessages(prev => [...prev, userMessage]);
+        setInput('');
+        setIsLoading(true);
+
+        try {
+            const response: AxiosResponse<ApiResponse> = await axios.post(
+                'http://localhost:5000/chat',
+                { prompt: userMessage.text },
+                {
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                }
+            );
+
+            const data = response.data;
+
+            if (data.success && data.response) {
+                const botMessage: Message = {
+                    text: data.response,
+                    isUser: false,
+                    timestamp: new Date().toLocaleTimeString(),
+                };
+                setMessages(prev => [...prev, botMessage]);
+            } else {
+                throw new Error(data.error || 'Something went wrong');
+            }
+        } catch (error) {
+            const errorMessage: Message = {
+                text: 'Sorry, I could not process that. Please try again.',
+                isUser: false,
+                timestamp: new Date().toLocaleTimeString(),
+            };
+            setMessages(prev => [...prev, errorMessage]);
+            console.error('Error:', error);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    const toggleTheme = () => {
+        setDarkMode(!darkMode);
+    };
 
     return (
         <div className={`min-h-screen ${darkMode ? 'bg-gray-900 text-white' : 'bg-gray-50 text-gray-900'} transition-colors duration-200 flex items-center justify-center p-4`}>
