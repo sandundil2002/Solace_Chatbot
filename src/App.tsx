@@ -75,7 +75,7 @@ const App: React.FC = () => {
 
     return (
         <div className={`min-h-screen ${darkMode ? 'bg-gray-900 text-white' : 'bg-gray-50 text-gray-900'} transition-colors duration-200 flex items-center justify-center p-4`}>
-            <div className={`w-full max-w-4xl ${darkMode ? 'bg-gray-800' : 'bg-white'} rounded-xl shadow-xl flex flex-col h-[90vh] transition-colors duration-200`}>
+            <div className={`w-full max-w-4xl ${darkMode ? 'bg-gray-800' : 'bg-white'} rounded-xl shadow-xl flex flex-col h-[95vh] transition-colors duration-200`}>
                 <div className={`${darkMode ? 'bg-indigo-700' : 'bg-indigo-600'} text-white p-4 rounded-t-xl flex justify-between items-center transition-colors duration-200`}>
                     <div>
                         <h1 className="text-2xl font-bold">Solace Chatbot</h1>
@@ -101,7 +101,7 @@ const App: React.FC = () => {
                         messages.map((message, index) => (
                             <div
                                 key={index}
-                                className={`mb-6 flex ${
+                                className={`mb-6 flex capitalize ${
                                     message.isUser ? 'justify-end' : 'justify-start'
                                 }`}
                             >
@@ -144,7 +144,7 @@ const App: React.FC = () => {
                             value={input}
                             onChange={(e) => setInput(e.target.value)}
                             placeholder="Type your message..."
-                            className={`flex-1 p-4 rounded-full focus:outline-none focus:ring-2 ${
+                            className={`flex-1 p-4 rounded-full focus:outline-none focus:ring-2 capitalize ${
                                 darkMode
                                     ? 'bg-gray-700 text-white border-gray-600 focus:ring-indigo-500'
                                     : 'bg-gray-100 text-gray-900 focus:ring-indigo-400'
@@ -169,6 +169,10 @@ const App: React.FC = () => {
                         </button>
                     </div>
                 </form>
+
+                <footer className={`p-2 text-center text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'} transition-colors duration-200`}>
+                    <p>Solace Chatbot - Developed By Sandun Dilshan @2025</p>
+                </footer>
             </div>
         </div>
     );
