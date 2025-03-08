@@ -24,11 +24,59 @@ const App: React.FC = () => {
                         <p className="text-sm opacity-90">Professional assistance whenever you need it</p>
                     </div>
                     <button
+                        onClick={toggleTheme}
                         className={`p-2 rounded-full ${darkMode ? 'bg-indigo-600 hover:bg-indigo-500' : 'bg-indigo-500 hover:bg-indigo-400'} transition-colors`}
                         aria-label={darkMode ? "Switch to light mode" : "Switch to dark mode"}
                     >
                         {darkMode ? <SunIcon className="w-5 h-5" /> : <MoonIcon className="w-5 h-5" />}
                     </button>
+                </div>
+
+                <div className={`flex-1 p-6 overflow-y-auto ${darkMode ? 'bg-gray-800' : 'bg-gray-50'} transition-colors duration-200`}>
+                    {messages.length === 0 ? (
+                        <div className={`text-center my-20 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                            <div className="text-4xl mb-3">👋</div>
+                            <h3 className="text-xl font-medium mb-2">Welcome to Solace Support</h3>
+                            <p>How can we assist you today?</p>
+                        </div>
+                    ) : (
+                        messages.map((message, index) => (
+                            <div
+                                key={index}
+                                className={`mb-6 flex ${
+                                    message.isUser ? 'justify-end' : 'justify-start'
+                                }`}
+                            >
+                                {!message.isUser && (
+                                    <div className="w-8 h-8 rounded-full bg-indigo-600 flex items-center justify-center text-white font-bold mr-2">
+                                        S
+                                    </div>
+                                )}
+                                <div
+                                    className={`max-w-[75%] p-4 rounded-2xl ${
+                                        message.isUser
+                                            ? darkMode
+                                                ? 'bg-indigo-600 text-white'
+                                                : 'bg-indigo-500 text-white'
+                                            : darkMode
+                                                ? 'bg-gray-700 text-gray-100'
+                                                : 'bg-white text-gray-800 shadow-sm'
+                                    } transition-colors duration-200`}
+                                >
+                                    <p className="leading-relaxed">{message.text}</p>
+                                    <span className="text-xs opacity-75 block mt-2">
+                                        {message.timestamp}
+                                    </span>
+                                </div>
+                                {message.isUser && (
+                                    <div className="w-8 h-8 rounded-full bg-gray-500 flex items-center justify-center text-white font-bold ml-2">
+                                        U
+                                    </div>
+                                )}
+                            </div>
+                        ))
+                    )}
+                    <div ref={messagesEndRef} />
                 </div>
 
 
