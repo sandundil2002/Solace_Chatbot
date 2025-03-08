@@ -79,7 +79,38 @@ const App: React.FC = () => {
                     <div ref={messagesEndRef} />
                 </div>
 
-
+                <form onSubmit={handleSendMessage} className={`p-4 border-t ${darkMode ? 'border-gray-700 bg-gray-800' : 'border-gray-200'} transition-colors duration-200`}>
+                    <div className="flex gap-2 items-center">
+                        <input
+                            type="text"
+                            value={input}
+                            onChange={(e) => setInput(e.target.value)}
+                            placeholder="Type your message..."
+                            className={`flex-1 p-4 rounded-full focus:outline-none focus:ring-2 ${
+                                darkMode
+                                    ? 'bg-gray-700 text-white border-gray-600 focus:ring-indigo-500'
+                                    : 'bg-gray-100 text-gray-900 focus:ring-indigo-400'
+                            } transition-colors duration-200`}
+                            disabled={isLoading}
+                        />
+                        <button
+                            type="submit"
+                            disabled={isLoading}
+                            className={`p-4 rounded-full ${
+                                darkMode
+                                    ? 'bg-indigo-600 hover:bg-indigo-500 disabled:bg-gray-600'
+                                    : 'bg-indigo-500 hover:bg-indigo-600 disabled:bg-gray-300'
+                            } text-white disabled:opacity-50 transition-colors`}
+                            aria-label="Send message"
+                        >
+                            {isLoading ? (
+                                <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                            ) : (
+                                <SendIcon className="w-5 h-5" />
+                            )}
+                        </button>
+                    </div>
+                </form>
             </div>
         </div>
     );
