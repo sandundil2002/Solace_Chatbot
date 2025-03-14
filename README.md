@@ -4,10 +4,6 @@
 
 <p id="description">Solace Chatbot is a responsive web application that connects users with an AI assistant capable of answering questions and providing support. Built with React and TypeScript the application features a clean professional UI with seamless dark/light theme switching to accommodate user preferences.</p>
 
-<h2>🚀 Demo</h2>
-
-[linkedin.url](linkedin.url)
-
 <h2>Project Screenshots:</h2>
 
 <img src="public/image-2.png" alt="project-screenshot" width="800" height="400/">
